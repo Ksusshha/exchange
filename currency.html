@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+      <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+      <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+  </head>
+  <body class="text-center">
+    <header>
+      <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand">{{name}}</a>
+      </nav>
+    </header>
+    <div class="container">
+        <div class="row justify-content-md-center">
+          <div class="col-8">
+            <table class="table table-striped table-border table-hover">
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Exchange rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key in currency_list %}
+                  <tr>
+                    <td>{{key.Date}}</td>
+                    <td>{{key.Value}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+          </div>
+
+          <div class="col-12">
+            <div id="container" style="width: 1000px; height: 450px; margin: 0 auto"></div>
+          </div>
+        </div>
+    </div>
+
+        <script type="text/javascript">
+
+            var array = {{array|tojson}}
+
+            Highcharts.stockChart('container', {
+                rangeSelector: {
+                    selected: 1
+                },
+                title: {
+                    text: 'Exchange rate'
+                },
+                series: [{
+                    name: 'Value',
+                    data: array,
+                    tooltip: {
+                        valueDecimals: 2
+                    }
+                }]
+            });
+        </script>
+  </body>
+</html>
