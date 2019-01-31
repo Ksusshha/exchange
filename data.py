@@ -1,9 +1,15 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 import requests
 import xmltodict
 import working_with_database as db
 import datetime
 import time
+import yaml
+
+with open("config.yml", 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
+database = cfg['database']
 
 app = Flask(__name__)
 
@@ -56,7 +62,6 @@ def get_currency(database_name: str, key: str):
 
 @app.route('/')
 def actions():
-    database = 'mongodb'
 
     if database == 'mongodb':
         write_to_database(database)
@@ -100,42 +105,22 @@ def actions():
 
     time = datetime.datetime.strftime(datetime.datetime.now(), "%d.%m.%Y")
 
-    # return data
-
-# print(actions()[0]['Data_cur'])
-
     return render_template('index.html', data=data, actual_time=time, array=data_currency, name=charcode)
 
-@app.route('/get_data')
-def get_data():
-    database = 'mongodb'
+@app.route('/<name>')
+def get_data(name):
+    data = get_currency(database, name)
 
-    array = get_from_database(database)
+    cur = [key['Value'] for key in data]
 
-        data_currency = list()
-        charcode = list()
+    currency = {name: cur}
 
-        for d in array[1]:
-            for val in array[0]:
-                if val['CharCode'] == d['_id']:
-                    val['Average'] = round(d['Average'], 4)
-        data = array[0]
+    print(jsonify(cur))
 
-        for val in array[0]:
-            name = val['CharCode']
-            charcode.append([name])
-            cur = get_currency(database, name)
-            arr = list()
-            for i in cur:
-                arr.append(i['Value'])
-            val['Data_cur'] = ', '.join(str(v) for v in arr)
-            # val['Data_cur'] = arr
-            data_currency.append(arr)
-
+    return jsonify(cur)
 
 @app.route('/<currency>')
 def redirect_to_currency_page(currency):
-    database = 'mongodb'
 
     if database == 'mongodb':
 
@@ -161,8 +146,6 @@ def redirect_to_currency_page(currency):
             valute['Value'] = i[3]
             data.append(valute)
         data = sorted(data, key=lambda x: x['Date'], reverse=True)
-
-    # return data_graph
 
     return render_template('currency.html', currency_list=data, name=currency, array=data_graph)
 
