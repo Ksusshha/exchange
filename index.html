@@ -28,14 +28,14 @@
                     <th scope="col">Sparkline</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody class="scrollable">
                 {% for key in data %}
                 <tr class='barclays'>
                     <th><a href={{key.CharCode}}>{{key.Name}}</a></th>
                     <td>{{key.CharCode}}</td>
                     <td>{{key.Value}}</td>
                     <td>{{key.Average}}</td>
-                    <td class="sparkline" data-value="{{key.Data_cur}}"></td>
+                    <td class="sparkline" data-value="{{key.Data_cur}}" data-name="{{key.CharCode}}">Loading...</td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -142,7 +142,8 @@
 };
 
     var start = +new Date(),
-        $tds = $('td[data-value]'),
+        // $tds = $('td[data-value]'),
+        $tds = $('td[data-name]'),
         n = 0;
 
     function doChunk() {
@@ -157,22 +158,41 @@
 
         for (i = 0; i < len; i += 1) {
             $td = $($tds[i]);
-            stringdata = $td.data('value');
-            arr = stringdata.split('; ');
-            data = $.map(arr[0].split(', '), parseFloat);
+            stringdata = $td.data('name');
+            // arr = stringdata.split('; ');
+            // data = $.map(arr[0].split(', '), parseFloat);
             chart = {};
 
-            $td.highcharts('SparkLine', {
-                series: [{
-                    data: data
-                }],
-                tooltip: {
-                    headerFormat: '<span style="font-size: 10px">' + $td.parent().find('th').html() + ':</span><br/>',
-                    pointFormat: '<b>{point.y}</b>'
-                },
-                chart: chart
-            });
-            n += 1;
+            $.ajax({
+                url: '/' + stringdata,
+                dataType: 'json',
+                success: function (data, textStatus) {
+                    $td.highcharts('SparkLine', {
+                        series: [{
+                            data: data
+                        }],
+                        tooltip: {
+                            headerFormat: '<span style="font-size: 10px">' + $td.parent().find('th').html() + ':</span><br/>',
+                            pointFormat: '<b>{point.y}</b>'
+                        },
+                        chart: chart
+                    });
+                    n += 1;
+                }
+            })
+            console.log(data)
+
+            // $td.highcharts('SparkLine', {
+            //     series: [{
+            //         data: data
+            //     }],
+            //     tooltip: {
+            //         headerFormat: '<span style="font-size: 10px">' + $td.parent().find('th').html() + ':</span><br/>',
+            //         pointFormat: '<b>{point.y}</b>'
+            //     },
+            //     chart: chart
+            // });
+            // n += 1;
         }
     }
     doChunk();
